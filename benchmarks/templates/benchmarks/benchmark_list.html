@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Foobar</h2>
+    <button onclick="window.location.href = '{% url 'create_benchmark' %}';">Create Benchmark</button>
+    <ul>
+        {% for benchmark in object_list %}
+
+            <li><a href="{% url 'detail' benchmark.pk %}">{{ benchmark.name }}
+            </a> : {{ benchmark.created}} :
+                <a href="{% url 'create' benchmark.pk %}">Resultat loggen</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

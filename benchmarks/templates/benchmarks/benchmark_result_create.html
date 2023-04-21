@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="./" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <p>
+    {% for test, result_form in form_list.items %}
+    <p>{{ test }}: {{ result_form }}
+    {% endfor %}
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="all">
+    <div class="tab">
+        <button id="date-button" type="button" class="btn">Show data sorted by Date</button>
+        <button id="exercise-button" type="button" class="btn">Show data sorted by Exercise</button>
+    </div>
+    <div id="exercises" class="tab-content">
+        <h3>Exercises</h3>
+        <table id="exercises_table" class="table"></table>
+    </div>
+    <div id="dates" class="tab-content">
+        <h3>Dates</h3>
+        <table id="dates_table" class="table"></table>
+    </div>
+    <p>
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        'use strict';
+
+        // KONSTANTEN / VARIABLEN
+        const elements = {};
+        const data_object = {};
+
+
+
+        function insertArrayInRow(array, row) {
+            for (let value of array) {
+                row.insertCell().innerText = value
+            }
+        }
+
+        function populate_exercises_table() {
+            function populate_header() {
+                let header = elements.exercises_table.createTHead().insertRow()
+                header.insertCell().innerText = ""
+                insertArrayInRow(data_object.dates.map(x => x.toLocaleString()), header)
+            }
+
+            function populate_body() {
+                Object.entries(data_object.exercises).forEach(value_pair => {
+                    let row = elements.exercises_table.insertRow()
+                    row.insertCell().textContent = (value_pair[0])
+                    insertArrayInRow(value_pair[1], row)
+                })
+
+            }
+
+            populate_header();
+            populate_body();
+        }
+
+        function populate_dates_table() {
+            function populate_header() {
+                let header = elements.dates_table.createTHead().insertRow()
+                header.insertCell().innerText = ""
+                insertArrayInRow(Object.entries(data_object.exercises).map(x => x[0]), header)
+            }
+
+            function populate_body() {
+                let dictionaryIterator = Object.entries(data_object.exercises)
+                for (let i = 0; i < data_object.dates.length; i++){
+                    let row = elements.dates_table.insertRow()
+                    row.insertCell().innerText = data_object.dates[i].toLocaleString()
+                    for (let j = 0; j < dictionaryIterator.length; j++){
+                        row.insertCell().innerText = dictionaryIterator[j][1][i]
+                    }
+                }
+            }
+            populate_header()
+            populate_body()
+        }
+
+
+        function domMapping() {
+            elements.dates_table = document.querySelector('#dates_table')
+            elements.exercises_table = document.querySelector('#exercises_table')
+            elements.date_button = document.querySelector('#date-button')
+            elements.exercise_button = document.querySelector('#exercise-button')
+        }
+
+        function loadDjangoData() {
+            data_object.dates = [{% for time in times %} new Date({{ time|date:"U" }}000), {% endfor %}]
+            data_object.exercises = {}
+            {% for label, data in data_dict.items %}
+                data_object.exercises["{{ label }}"] = {{ data|safe }}
+            {% endfor %}
+        }
+
+        function hiddeAllTables() {
+            let tabcontent = document.querySelectorAll(".tab-content");
+            tabcontent.forEach(x => x.style.display = "none")
+        }
+
+        function showTab(evt, divName) {
+
+            function greyOutButtons() {
+                let buttons = document.querySelectorAll(".btn");
+                buttons.forEach(x => x.classList.remove("btn-primary"))
+            }
+
+
+
+            hiddeAllTables();
+            greyOutButtons();
+            document.getElementById(divName).style.display = "block";
+            evt.target.classList.add("btn-primary")
+        }
+
+        function appendEventlisteners() {
+            elements.date_button.addEventListener("click", evt =>{
+                showTab(evt, "dates")
+            })
+            elements.exercise_button.addEventListener("click", evt =>{
+                showTab(evt, "exercises")
+            })
+        }
+
+        function createGraph() {
+            const ctx = document.getElementById('myChart');
+            let dataset = []
+            for (const [key, value] of Object.entries(data_object.exercises)) {
+                dataset.push(
+                    {
+                        label: key,
+                        data: value,
+                        borderWidth: 1
+                    })
+            }
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data_object.dates.map(x => x.toDateString()),
+                    datasets: dataset
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                    }
+                }
+            });
+        }
+
+        function init() {
+            loadDjangoData()
+            domMapping();
+            appendEventlisteners();
+            populate_exercises_table();
+            populate_dates_table();
+            hiddeAllTables()
+            createGraph()
+        }
+
+        // INIT
+        init();
+
+
+    </script>
+{% endblock %}

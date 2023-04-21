@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form id="benchmark_form" action="./" method="post">{% csrf_token %}
+        {{ form }}
+        <div id="form-div" class="form-group">
+
+        </div>
+        <div id="form-group" class="form-group">
+
+        </div>
+        <input type="submit" value="Save">
+        <div id="container" class="container">
+
+        </div>
+    </form>
+
+    <p>
+    <button id="add_button">Add Test</button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+            crossorigin="anonymous"></script>
+    <script>
+        'use strict';
+
+        // KONSTANTEN / VARIABLEN
+        const elements = {};
+        let counter = 0;
+
+        // FUNKTIONEN
+        const domMapping = () => {
+            elements.form = document.querySelector("#benchmark_form")
+            elements.add_button = document.querySelector("#add_button")
+            elements.container = document.querySelector("#container")
+            elements.formDiv = document.querySelector("#form-div")
+        }
+
+        const createLabel = (labelName, parent) => {
+            let label = document.createElement("label")
+            label.innerText = labelName
+            parent.appendChild(label)
+            return label
+        }
+
+        function createInput(inputType, placeholder, label, classes) {
+            let input = createElement("input", "form-control", label)
+            for (let classArg of classes) {
+                input[classArg] = true
+            }
+            input.placeholder = placeholder
+            return input
+        }
+
+        const createInputWithLabel = (parent, labelName, inputType, placeholder, classArg) => {
+            let formGroup = createElement("div", "form-group", parent)
+            let label = createLabel(labelName, formGroup)
+            return createInput(inputType, placeholder, label, classArg);
+        }
+
+        function onCreateExercise() {
+
+            function createInputs(form) {
+                elements.nameInput = createInputWithLabel(form, "Name", "text", "Name of exercise", ['required'])
+                elements.descriptionInput = createInputWithLabel(form, "Description", "text", "Description", [])
+                elements.repetitionInput = createInputWithLabel(form, "Target Repetitions", "number", "Number of repetitions", [])
+            }
+
+            function createSubmitButton(form) {
+                let button = document.createElement("button")
+                button.type = "submit"
+                button.innerText = "Submit"
+                form.appendChild(button)
+            }
+
+            let modalBody = createModalView(document.body, "Add Exercise")
+            let form = document.createElement("form")
+            form.addEventListener("submit", evt => addNewExerciseAndDestroyModal(evt))
+            modalBody.appendChild(form)
+            elements.modalDiv = document.createElement("div")
+            form.appendChild(elements.modalDiv)
+            createInputs(elements.modalDiv);
+            createSubmitButton(form);
+            modalBody.appendChild(form);
+        }
+
+        const appendEventlisteners = () => {
+            elements.add_button.addEventListener("click", evt => {
+                onCreateExercise();
+            })
+        }
+
+        function hiddeModal() {
+            let modal = bootstrap.Modal.getInstance(elements.modal)
+            modal.hide()
+            elements.modal.remove()
+        }
+
+        function addNewExerciseAndDestroyModal(evt) {
+            evt.preventDefault()
+            elements.formDiv.appendChild(elements.modalDiv)
+            elements.nameInput.name = "nameInput_" + counter
+            elements.descriptionInput.name = "descriptionInput_" + counter
+            elements.repetitionInput.name = "repetitionInput_" + counter
+            counter+=1
+            elements.nameInput.readOnly = true
+            elements.descriptionInput.readOnly = true
+            elements.repetitionInput.readOnly = true
+            hiddeModal();
+        }
+
+        function createElement(type, className, parent) {
+            let div = document.createElement(type)
+            div.classList.add(className)
+            parent.appendChild(div)
+            return div
+        }
+
+        function createModalView(parent, title) {
+            function createModal() {
+                let modal = createElement("div", "modal", parent)
+                modal.tabIndex = -1
+                modal.role = "dialog"
+                elements.modal = modal
+                return modal;
+            }
+
+            function createModalDialog(modalArg) {
+                let modalDialog = createElement("div", "modal-dialog", modalArg)
+                modalDialog.role = "document"
+                return modalDialog
+            }
+
+            function createModalContent(modalDialog) {
+                return createElement("div", "modal-content", modalDialog)
+            }
+
+            function createModalHeader(modalContent) {
+                return createElement("div", "modal-header", modalContent)
+            }
+
+            function createModalTitle(modalHeader, title) {
+                let titleElem = createElement("h5", "modal-title", modalHeader)
+                titleElem.innerText = title
+                return titleElem
+            }
+
+            function createModalBody(modalContent) {
+                return createElement("div", "modal-body", modalContent)
+            }
+
+            let modal = createModal(parent);
+            let modalDialog = createModalDialog(modal);
+            let modalContent = createModalContent(modalDialog);
+            let modalHeader = createModalHeader(modalContent)
+            createModalTitle(modalHeader, title)
+            let modalBody = createModalBody(modalContent)
+            new bootstrap.Modal(modal).show()
+            return modalBody
+        }
+
+        const init = () => {
+            domMapping();
+            appendEventlisteners();
+        }
+
+        // INIT
+        document.addEventListener("DOMContentLoaded", evt => init())
+
+    </script>
+{% endblock %}

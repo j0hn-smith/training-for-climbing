@@ -1,0 +1,6 @@
+{% block content %}
+{{ object.name }}
+{% for repetition_test in object.repetitiontest_set.all %}
+    <li>>{{ repetition_test.name }} - {{ repetition_test.description }} - {{ repetition_test.target }} </li>
+{%  endfor  %}
+{% endblock %}

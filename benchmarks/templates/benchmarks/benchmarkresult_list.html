@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Result</h2>
+    <ul>
+        {% for result in object_list %}
+            <li>{{ result.created}} : {{ result.comment}}</li>
+        {% endfor %}
+    </ul>
+
+
+
+{% endblock %}
